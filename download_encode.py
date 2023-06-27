@@ -2,10 +2,29 @@ import os
 import pandas as pd
 import requests
 import json
+import argparse
 
 ENCODE_BASE_URL = 'https://www.encodeproject.org'
 # Force return from the server in JSON format
 headers = {'accept': 'application/json'}
+
+
+def parse_arguments():
+    parser = argparse.ArgumentParser(prog='download ENCODE',
+                                     description='Downloads ENCODE data from search result obtained from ENCODE restAPI')
+    parser.add_argument('search_results_file',
+                        metavar='F',
+                        type=str,
+                        help='Search results file obtained using restAPI')
+    parser.add_argument("--filetypes", nargs='*', help="file types to download. example: bam bigwig fastq")
+    parser.add_argument("--range", nargs=2, type=int, help='Download search result data from range[0] to range[1]')
+    parser.add_argument("--directory", type=str, help="Save all files to this directory, default create and save at ./download/")
+    args = parser.parse_args()
+    # print(args.search_results_file)
+    # print(args.filetypes)
+    # print(args.range)
+    # print(args.directory)
+    return args
 
 
 def download_encode_data(search_results_file, file_types, download_range=(0, None), download_directory="./download/"):
@@ -14,7 +33,14 @@ def download_encode_data(search_results_file, file_types, download_range=(0, Non
     search_results = json.load(f)
     f.close()
 
+    if file_types is None:
+        file_types = ["bam", "bigwig"]
+    file_types = [file_type.lower() for file_type in file_types]
+
     # create saving path if path does not exist
+    if download_directory[-1] != "/":
+        download_directory = download_directory + "/"
+
     if not os.path.exists(download_directory):
         os.makedirs(download_directory)
         print("create path")
@@ -61,9 +87,15 @@ def download_encode_data(search_results_file, file_types, download_range=(0, Non
     df.to_csv(download_directory + 'download_file_info.csv')
     return
 
+
 if __name__ == "__main__":
-    file_types = ["bam", "bigwig"]
-    download_encode_data('search_results.json',
-                         file_types,
-                         download_range=(0, 2),
-                         download_directory="/dcl02/hongkai/data/mjiang/multitag/ENCODE/")
+    # file_types = ["bam", "bigwig"]
+    # download_encode_data('search_results.json',
+    #                      file_types,
+    #                      download_range=(0, 2),
+    #                      download_directory="/dcl02/hongkai/data/mjiang/multitag/ENCODE/")
+    args = parse_arguments()
+    download_encode_data(search_results_file=args.search_results_file,
+                         file_types=args.filetypes,
+                         download_range=args.range,
+                         download_directory=args.directory)
