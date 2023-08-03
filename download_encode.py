@@ -72,29 +72,31 @@ def download_encode_data(search_results_file, file_types, download_range=(0, Non
             search_file_json = search_file.json()
             # select file types we want
             if search_file_json["file_type"].lower() in file_types or 'peak' in search_file_json["output_type"].lower():
-                if search_file_json["status"] != 'archived':
+                if search_file_json["status"] != 'archived' and search_file_json["assembly"].lower() == "GRCh38".lower():
                     accession_folder = download_directory + search_result_i['accession'] + "/"
                     if not os.path.exists(accession_folder):
                         os.makedirs(accession_folder, exist_ok=True)
                         print("create path at {}".format(accession_folder))
                     file_url = ENCODE_BASE_URL + search_file_json['href']
+
                     file_output_name = accession_folder + search_file_json['href'].split("/")[-1]
-                    iso_replicate = search_file_json["biological_replicates"]
-                    iso_replicate_str = " ".join(str(x) for x in iso_replicate)
-                    record = {'file_name': file_output_name,
-                              'output_type': search_file_json["output_type"],
-                              'experiment_accession': search_result_i['accession'],
-                              'target': search_file_json["target"]['label'],
-                              "Isogenic replicate": iso_replicate_str}
-                    if search_file_json["file_type"] == "bam":
-                        if search_file_json["output_type"] == "alignments":
+                    if not os.path.isfile(file_output_name): # only download if file does not exist
+                        iso_replicate = search_file_json["biological_replicates"]
+                        iso_replicate_str = " ".join(str(x) for x in iso_replicate)
+                        record = {'file_name': file_output_name,
+                                  'output_type': search_file_json["output_type"],
+                                  'experiment_accession': search_result_i['accession'],
+                                  'target': search_file_json["target"]['label'],
+                                  "Isogenic replicate": iso_replicate_str}
+                        if search_file_json["file_type"] == "bam":
+                            if search_file_json["output_type"] == "alignments":
+                                df = pd.concat([df, pd.DataFrame.from_records([record])])
+                                cmd_curl = 'curl -RL {} -o {}'.format(file_url, file_output_name)
+                                os.system(cmd_curl)
+                        else:
                             df = pd.concat([df, pd.DataFrame.from_records([record])])
                             cmd_curl = 'curl -RL {} -o {}'.format(file_url, file_output_name)
                             os.system(cmd_curl)
-                    else:
-                        df = pd.concat([df, pd.DataFrame.from_records([record])])
-                        cmd_curl = 'curl -RL {} -o {}'.format(file_url, file_output_name)
-                        os.system(cmd_curl)
                     # search_file_json["target"]['label']
     download_file_directory = download_directory + 'download_file_info.csv'
     if os.path.isfile(download_file_directory):
