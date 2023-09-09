@@ -71,7 +71,7 @@ def download_encode_data(search_results_file, file_types, download_range=(0, Non
             search_file = requests.get(url, headers=headers)
             search_file_json = search_file.json()
             # select file types we want
-            if search_file_json["file_type"].lower() in file_types or 'peak' in search_file_json["output_type"].lower():
+            if search_file_json["file_type"].lower() in file_types:
                 if search_file_json["status"] != 'archived' and search_file_json["assembly"].lower() == "GRCh38".lower():
                     accession_folder = download_directory + search_result_i['accession'] + "/"
                     if not os.path.exists(accession_folder):
@@ -102,7 +102,7 @@ def download_encode_data(search_results_file, file_types, download_range=(0, Non
     if os.path.isfile(download_file_directory):
         df.to_csv(download_file_directory, mode='a', index=False, header=False)
     else:
-        df.to_csv(download_file_directory)
+        df.to_csv(download_file_directory, index=False)
     return
 
 
