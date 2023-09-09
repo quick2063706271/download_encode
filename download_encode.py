@@ -83,10 +83,14 @@ def download_encode_data(search_results_file, file_types, download_range=(0, Non
                     if not os.path.isfile(file_output_name): # only download if file does not exist
                         iso_replicate = search_file_json["biological_replicates"]
                         iso_replicate_str = " ".join(str(x) for x in iso_replicate)
+                        if "target" in search_file_json:
+                            tag = search_file_json["target"]['label']
+                        else:
+                            tag = "NA"
                         record = {'file_name': file_output_name,
                                   'output_type': search_file_json["output_type"],
                                   'experiment_accession': search_result_i['accession'],
-                                  'target': search_file_json["target"]['label'],
+                                  'target': tag,
                                   "Isogenic replicate": iso_replicate_str}
                         if search_file_json["file_type"] == "bam":
                             if search_file_json["output_type"] == "alignments":
