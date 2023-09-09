@@ -72,7 +72,7 @@ def download_encode_data(search_results_file, file_types, download_range=(0, Non
             search_file_json = search_file.json()
             # select file types we want
             if search_file_json["file_type"].lower() in file_types:
-                if search_file_json["status"] != 'archived' and search_file_json["assembly"].lower() == "GRCh38".lower():
+                if search_file_json["status"] != 'archived':
                     accession_folder = download_directory + search_result_i['accession'] + "/"
                     if not os.path.exists(accession_folder):
                         os.makedirs(accession_folder, exist_ok=True)
